@@ -1,5 +1,7 @@
 # kubernetes (k8s) bitrix php nginx mysql
 
+## [Ответы на вопросы](https://github.com/mizuhomizuho/kubernetes-k8s-bitrix-php-nginx-mysql/blob/master/Result.odt)
+
 ```shell
 minikube delete
 ```
