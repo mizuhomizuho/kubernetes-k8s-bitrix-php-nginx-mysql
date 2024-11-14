@@ -3,6 +3,9 @@
 ## [Ответы на вопросы](https://github.com/mizuhomizuho/kubernetes-k8s-bitrix-php-nginx-mysql/blob/master/Result.odt)
 
 ```shell
+docker build -t php81fpm-v1 ./k8s
+```
+```shell
 minikube delete
 ```
 ```shell

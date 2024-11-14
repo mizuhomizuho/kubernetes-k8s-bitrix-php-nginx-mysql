@@ -10,6 +10,10 @@ data:
         
         root /var/www/app/web;
         index index.php index.html index.htm;
+    
+        http {
+            client_max_body_size 8M;
+        }
         
         location / {
             try_files $uri $uri/ /index.php?$query_string;
@@ -57,7 +61,7 @@ metadata:
   labels:
     type: local
 spec:
-  storageClassName: manual
+  storageClassName: fast-storage
   capacity:
     storage: 10Gi
   accessModes:
@@ -75,7 +79,7 @@ metadata:
   namespace: default
 spec:
   volumeName: app-volume
-  storageClassName: manual
+  storageClassName: fast-storage
   resources:
     requests:
       storage: 10Gi
@@ -89,6 +93,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: mysql-pvc
 spec:
+  storageClassName: fast-storage
   accessModes:
     - ReadWriteOnce
   resources:
@@ -167,7 +172,8 @@ spec:
 #              mountPath: /var/www/app
       containers:
       - name: php
-        image: php:8.1-fpm
+#        image: php:8.1-fpm
+        image: php81fpm-v1:latest
         command: ["sh", "-c", "/var/www/app/k8s/php-bootstrap.sh"]
 #        args: ["/bin/sh", "-c", "/var/www/app/php_bootstrap.sh"]
         volumeMounts:
