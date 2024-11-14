@@ -1,4 +1,4 @@
-# git init
+# kubernetes (k8s) bitrix php nginx mysql
 
 ```shell
 minikube delete
