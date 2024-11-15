@@ -3,8 +3,8 @@
 ## [Ответы на вопросы](https://github.com/mizuhomizuho/kubernetes-k8s-bitrix-php-nginx-mysql/blob/master/Result.odt)
 
 ```shell
-cd k8s
-wget https://www.1c-bitrix.ru/download/business_encode.zip
+curl -o ./k8s https://www.1c-bitrix.ru/download/business_encode.zip
+ssh -p 51348 -i ~/.minikube/machines/minikube/id_rsa docker@127.0.0.1
 ```
 ```shell
 docker build -t php81fpm-k8s-bitrix ./k8s
