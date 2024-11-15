@@ -10,9 +10,6 @@ wget https://www.1c-bitrix.ru/download/business_encode.zip
 docker build -t php81fpm-k8s-bitrix ./k8s
 ```
 ```shell
-minikube delete
-```
-```shell
 make restart
 ```
 ```shell
