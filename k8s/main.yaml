@@ -1,0 +1,261 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  default.conf: |
+    server {
+    
+      listen 80;
+      server_name bitrix.local;
+    
+      client_max_body_size 8M;
+    
+      root /var/www/app/web;
+      index index.php index.html index.htm;
+    
+      location / {
+        try_files $uri $uri/ /index.php?$query_string;
+      }
+    
+      location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_pass php:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+      }
+    }
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+type: Opaque
+data:
+  mysql-root-password: bWVvdzg4ODg4ODg4 #base64 (meow88888888)
+  mysql-user-password: bWVvdzg= #base64 (meow8)
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: app-pv
+  labels:
+    type: local
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /app/pvc
+  persistentVolumeReclaimPolicy: Retain
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-pvc
+  namespace: default
+spec:
+  volumeName: app-pv
+  resources:
+    requests:
+      storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql-root-password
+            - name: MYSQL_DATABASE
+              value: bitrix
+            - name: MYSQL_USER
+              value: bitrix_user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql-user-password
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: php
+  template:
+    metadata:
+      labels:
+        app: php
+    spec:
+      initContainers:
+        - name: php-init
+          image: busybox
+          command: ["sh", "-c", "/k8s/php-init.sh"]
+          volumeMounts:
+            - name: app
+              mountPath: /pvc
+            - name: k8s
+              mountPath: /k8s
+              readOnly: true
+      containers:
+        - name: php
+          image: php81fpm-k8s-bitrix
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", "/k8s/php-bootstrap.sh"]
+          volumeMounts:
+            - name: app
+              mountPath: /var/www/app
+            - name: k8s
+              mountPath: /k8s
+      volumes:
+        - name: app
+          persistentVolumeClaim:
+            claimName: app-pvc
+        - name: k8s
+          hostPath:
+            path: /app/k8s
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+            - name: app
+              mountPath: /var/www/app
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+        - name: app
+          persistentVolumeClaim:
+            claimName: app-pvc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  selector:
+    app: mysql
+  ports:
+    - port: 3306
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: php
+spec:
+  selector:
+    app: php
+  ports:
+    - port: 9000
+#      protocol: TCP
+#      targetPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  selector:
+    app: nginx
+  ports:
+    - port: 80
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bitrix-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "8m"
+spec:
+  rules:
+    - host: bitrix.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx
+                port:
+                  number: 80

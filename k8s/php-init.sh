@@ -1,4 +1,9 @@
 #!/bin/sh
-echo 'php_init.sh...'
-/var/www/app/k8s/install-php-extensions gd
-php -r 'copy("/var/www/app/k8s/php-bitrix.ini", "/usr/local/etc/php/conf.d/php-bitrix.ini");'
+
+if [ ! -d "/pvc/web" ]; then
+  echo "Install..."
+  mkdir /pvc/web
+  chmod 777 /pvc/web
+  unzip /k8s/business_encode.zip -d ./pvc/web >> /dev/null
+  cat /k8s/bitrix_server_test.php > /pvc/web/bitrix_server_test.php
+fi
