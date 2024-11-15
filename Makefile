@@ -6,7 +6,7 @@ MAIN_YAML = "$(CURDIR)/k8s/main.yaml"
 .PHONY: restart
 restart:
 	-@minikube stop
-	@minikube start --mount --mount-string="$(CURDIR):/app" --addons=ingress
+	@minikube start --mount --mount-string="$(CURDIR):/home/docker/app/common" --addons=ingress
 
 .PHONY: apply
 apply:

@@ -52,7 +52,8 @@ spec:
   accessModes:
     - ReadWriteMany
   hostPath:
-    path: /app/pvc
+    path: /home/docker/app/pvc
+    type: DirectoryOrCreate
   persistentVolumeReclaimPolicy: Retain
 
 ---
@@ -167,7 +168,8 @@ spec:
             claimName: app-pvc
         - name: k8s
           hostPath:
-            path: /app/k8s
+            path: /home/docker/app/common/k8s
+            type: DirectoryOrCreate
 
 ---
 
