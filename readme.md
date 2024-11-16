@@ -83,6 +83,3 @@ make del-pod type=nginx num=0
 ```shell
 make del-pod type=mysql num=0
 ```
-```shell
-make del-pod type=dev num=0
-```

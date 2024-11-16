@@ -144,8 +144,7 @@ spec:
     spec:
       initContainers:
         - name: php-init
-          image: k8s_bitrix_php
-          imagePullPolicy: IfNotPresent
+          image: busybox
           command: ["sh", "-c", "/k8s/scripts/php_init.sh"]
           volumeMounts:
             - name: app
