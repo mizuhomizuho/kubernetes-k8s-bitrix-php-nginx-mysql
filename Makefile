@@ -6,7 +6,7 @@ MAIN_YAML = "$(CURDIR)/k8s/main.yaml"
 .PHONY: restart
 restart:
 	-@minikube stop
-	@minikube start --mount --mount-string="$(CURDIR):/home/docker/app/common" --addons=ingress
+	@minikube start --mount --mount-string="$(CURDIR)/k8s:/k8s" --addons=ingress
 
 .PHONY: apply
 apply:
@@ -20,11 +20,39 @@ delete:
 exec:
 	kubectl exec -it $(PODS_BY_NUM) -- sh
 
+.PHONY: tunnel_1
+tunnel_1:
+	minikube tunnel
+
+.PHONY: tunnel_2
+tunnel_2:
+	kubectl port-forward pod/$(PODS_BY_NUM) 8822:22
+
+.PHONY: tunnel
+tunnel: tunnel_1 tunnel_2
+
+.PHONY: del-pod
+del-pod:
+	kubectl delete pod $(PODS_BY_NUM)
+
 .PHONY: info
 info:
-	@minikube ip
+	-@echo Ingress:
+	-@echo ------------------------------------------------------------------------------------------------------------
+	-@kubectl get ingress
+	-@echo ------------------------------------------------------------------------------------------------------------
+	-@echo Services:
+	-@echo ------------------------------------------------------------------------------------------------------------
+	-@kubectl get services -o wide
+	-@echo ------------------------------------------------------------------------------------------------------------
+	-@echo Pods:
+	-@echo ------------------------------------------------------------------------------------------------------------
 	-@kubectl get pods -o wide
-	-@kubectl get pvc
+	-@echo ------------------------------------------------------------------------------------------------------------
+	-@echo Pvc:
+	-@echo ------------------------------------------------------------------------------------------------------------
+	-@kubectl get pvc -o wide
+
 
 .PHONY: logs
 logs:

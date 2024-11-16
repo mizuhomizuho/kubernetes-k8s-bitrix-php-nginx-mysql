@@ -1,6 +1,6 @@
 <?php
 
-const MAILS_DIR = __DIR__ . '/mails';
+const MAILS_DIR = __DIR__ . '/../mails';
 
 $stream = '';
 $fp = fopen('php://stdin','r');

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cat /k8s/php-bitrix.ini > /usr/local/etc/php/conf.d/php-bitrix.ini
+cat /k8s/php_bitrix.ini > /usr/local/etc/php/conf.d/php_bitrix.ini
 
 NGINX_IP=$(getent hosts "nginx.default.svc.cluster.local" | sed "s@\s.*@\ @")
 while true; do
@@ -12,4 +12,5 @@ while true; do
   sleep 0.5
 done
 
+/usr/sbin/sshd -D
 php-fpm -F -R

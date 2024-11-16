@@ -37,24 +37,24 @@ data:
   mysql-root-password: bWVvdzg4ODg4ODg4 #base64 (meow88888888)
   mysql-user-password: bWVvdzg= #base64 (meow8)
 
----
-
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: app-pv
-  labels:
-    type: local
-spec:
-  storageClassName: standard
-  capacity:
-    storage: 10Gi
-  accessModes:
-    - ReadWriteMany
-  hostPath:
-    path: /home/docker/app/pvc
-    type: DirectoryOrCreate
-  persistentVolumeReclaimPolicy: Retain
+#---
+#
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+#  name: app-pv
+#  labels:
+#    type: local
+#spec:
+#  storageClassName: standard
+#  capacity:
+#    storage: 8Gi
+#  accessModes:
+#    - ReadWriteMany
+#  hostPath:
+#    path: /home/docker/app/pvc
+#    type: DirectoryOrCreate
+#  persistentVolumeReclaimPolicy: Retain
 
 ---
 
@@ -64,10 +64,10 @@ metadata:
   name: app-pvc
   namespace: default
 spec:
-  volumeName: app-pv
+#  volumeName: app-pv
   resources:
     requests:
-      storage: 10Gi
+      storage: 8Gi
   accessModes:
     - ReadWriteMany
 
@@ -82,7 +82,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 8Gi
 
 ---
 
@@ -144,8 +144,9 @@ spec:
     spec:
       initContainers:
         - name: php-init
-          image: busybox
-          command: ["sh", "-c", "/k8s/php-init.sh"]
+          image: k8s_bitrix_php
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", "/k8s/scripts/php_init.sh"]
           volumeMounts:
             - name: app
               mountPath: /pvc
@@ -154,9 +155,9 @@ spec:
               readOnly: true
       containers:
         - name: php
-          image: php81fpm-k8s-bitrix
+          image: k8s_bitrix_php
           imagePullPolicy: IfNotPresent
-          command: ["sh", "-c", "/k8s/php-bootstrap.sh"]
+          command: ["sh", "-c", "/k8s/scripts/php_bootstrap.sh"]
           volumeMounts:
             - name: app
               mountPath: /var/www/app
@@ -168,8 +169,7 @@ spec:
             claimName: app-pvc
         - name: k8s
           hostPath:
-            path: /home/docker/app/common/k8s
-            type: DirectoryOrCreate
+            path: /k8s
 
 ---
 
@@ -226,8 +226,6 @@ spec:
     app: php
   ports:
     - port: 9000
-#      protocol: TCP
-#      targetPort: 80
 
 ---
 
