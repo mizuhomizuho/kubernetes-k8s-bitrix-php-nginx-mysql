@@ -87,17 +87,8 @@ make delete
 make exec type=mysql num=0
 ```
 ```shell
-make exec type=php num=0
-```
-```shell
-make logs type=nginx
-```
-```shell
 make logs type=php
 ```
 ```shell
-make logs type=mysql
-```
-```shell
-make del-pod type=php num=0
+make del-pod type=nginx num=0
 ```
