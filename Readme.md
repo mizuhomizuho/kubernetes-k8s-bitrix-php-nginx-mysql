@@ -1,5 +1,9 @@
 # KUBERNETES (K8S) BITRIX PHP NGINX MYSQLU
 
+## Ответы на вопросы:
+
+[PDF](https://github.com/mizuhomizuho/kubernetes-k8s-bitrix-php-nginx-mysql/blob/master/Result.pdf)
+
 ```text
 Ingress:
 ------------------------------------------------------------------------------------------------------------
@@ -72,7 +76,3 @@ make logs type=nginx
 ```shell
 make del-pod type=php num=0
 ```
-
-## Ответы на вопросы:
-
-[PDF](https://github.com/mizuhomizuho/kubernetes-k8s-bitrix-php-nginx-mysql/blob/master/Result.pdf)
