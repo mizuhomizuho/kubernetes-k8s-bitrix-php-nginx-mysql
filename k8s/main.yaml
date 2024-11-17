@@ -9,7 +9,11 @@ data:
       listen 80;
       server_name bitrix.local;
     
-      client_max_body_size 8M;
+      client_max_body_size 8M; # __POST_SIZE_VALUE__
+    
+      proxy_read_timeout 888; # __TIMEOUT_VALUE__
+      proxy_send_timeout 888; # __TIMEOUT_VALUE__
+      proxy_connect_timeout 8; # __TIMEOUT_VALUE__
     
       root /var/www/app/web;
       index index.php index.html index.htm;
@@ -19,12 +23,27 @@ data:
       }
     
       location ~ \.php$ {
+    
         include fastcgi_params;
         fastcgi_pass php:9000;
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    
+        fastcgi_read_timeout 888; # __TIMEOUT_VALUE__
       }
     }
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config
+data:
+  bitrix.cnf: |
+    [mysqld]
+    default-time-zone = '+03:00' # __TIME_ZONE_VALUE__
+    innodb_strict_mode = OFF
 
 ---
 
@@ -34,8 +53,9 @@ metadata:
   name: mysql-secret
 type: Opaque
 data:
+  # server: mysql.default.svc.cluster.local
   mysql-root-password: bWVvdzg4ODg4ODg4 #base64 (meow88888888)
-  mysql-user-password: bWVvdzg= #base64 (meow8)
+  mysql-user-password: c2l0ZW1hbmFnZXI= #base64 (sitemanager)
 
 #---
 #
@@ -110,21 +130,31 @@ spec:
                   name: mysql-secret
                   key: mysql-root-password
             - name: MYSQL_DATABASE
-              value: bitrix
+              value: sitemanager
             - name: MYSQL_USER
-              value: bitrix_user
+              value: sitemanager
             - name: MYSQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mysql-secret
                   key: mysql-user-password
           volumeMounts:
+            - name: mysql-config
+              mountPath: /etc/mysql/conf.d
             - name: mysql-data
               mountPath: /var/lib/mysql
+            - name: k8s
+              mountPath: /k8s
       volumes:
+        - name: mysql-config
+          configMap:
+            name: mysql-config
         - name: mysql-data
           persistentVolumeClaim:
             claimName: mysql-pvc
+        - name: k8s
+          hostPath:
+            path: /k8s
 
 ---
 
@@ -142,16 +172,6 @@ spec:
       labels:
         app: php
     spec:
-      initContainers:
-        - name: php-init
-          image: busybox
-          command: ["sh", "-c", "/k8s/scripts/php_init.sh"]
-          volumeMounts:
-            - name: app
-              mountPath: /pvc
-            - name: k8s
-              mountPath: /k8s
-              readOnly: true
       containers:
         - name: php
           image: k8s_bitrix_php
@@ -245,8 +265,13 @@ kind: Ingress
 metadata:
   name: bitrix-ingress
   annotations:
-    nginx.ingress.kubernetes.io/proxy-body-size: "8m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "8m" # __POST_SIZE_VALUE__
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "8m" # __POST_SIZE_VALUE__
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "888" # __TIMEOUT_VALUE__
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "888" # __TIMEOUT_VALUE__
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "8" # __TIMEOUT_VALUE__
 spec:
+  ingressClassName: nginx
   rules:
     - host: bitrix.local
       http:

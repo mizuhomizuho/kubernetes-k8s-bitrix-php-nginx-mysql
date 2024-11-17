@@ -3,8 +3,8 @@
 const MAILS_DIR = __DIR__ . '/../mails';
 
 $stream = '';
-$fp = fopen('php://stdin','r');
-while($t = fread($fp,2048)) {
+$fp = fopen('php://stdin', 'r');
+while($t = fread($fp, 2048)) {
     if($t === chr(0))
         break;
     $stream .= $t;
@@ -23,4 +23,3 @@ $mkName = function ($i=0) use (&$mkName): string {
 };
 
 file_put_contents($mkName(), $stream);
-

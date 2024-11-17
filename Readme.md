@@ -1,6 +1,4 @@
-# kubernetes (k8s) bitrix php nginx mysql
-
-## [Ответы на вопросы](https://github.com/mizuhomizuho/kubernetes-k8s-bitrix-php-nginx-mysql/blob/master/Result.pdf)
+# KUBERNETES (K8S) BITRIX PHP NGINX MYSQLU
 
 ```text
 Ingress:
@@ -29,8 +27,17 @@ NAME        STATUS   VOLUME                                     CAPACITY   ACCES
 app-pvc     Bound    pvc-fa8b2fa8-092f-488f-ad29-ba3df4351949   8Gi        RWX            standard       <unset>                 114s   Filesystem
 mysql-pvc   Bound    pvc-b032affe-9e50-41ba-992e-e32b34a8a2b4   8Gi        RWO            standard       <unset>                 114s   Filesystem
 ```
+
+## You're gonna need:
+
+- docker
+- minikube
+- kubectl
+
+## For start:
+
 ```shell
-curl -o ./k8s https://www.1c-bitrix.ru/download/business_encode.zip
+wget -O ./k8s/business_encode.tar.gz https://www.1c-bitrix.ru/download/business_encode.tar.gz
 ```
 ```shell
 docker build -t k8s_bitrix_php ./k8s
@@ -45,28 +52,19 @@ minikube image load k8s_bitrix_php
 make apply
 ```
 ```shell
-make delete
+make -j 2 tunnel type=php num=0
 ```
+
+## More command examples:
+
 ```shell
 make info
 ```
 ```shell
-make -j 2 tunnel type=php num=0
-```
-```shell
-make exec type=php num=0
-```
-```shell
-make exec type=nginx num=0
+make delete
 ```
 ```shell
 make exec type=mysql num=0
-```
-```shell
-make logs type=php
-```
-```shell
-make logs type=nginx
 ```
 ```shell
 make logs type=mysql
@@ -75,11 +73,9 @@ make logs type=mysql
 make logs type=php lp="-c php-init"
 ```
 ```shell
-make del-pod type=php num=0
-```
-```shell
-make del-pod type=nginx num=0
-```
-```shell
 make del-pod type=mysql num=0
 ```
+
+## Ответы на вопросы:
+
+[PDF](https://github.com/mizuhomizuho/kubernetes-k8s-bitrix-php-nginx-mysql/blob/master/Result.pdf)
