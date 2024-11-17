@@ -36,6 +36,12 @@ mysql-pvc   Bound    pvc-b032affe-9e50-41ba-992e-e32b34a8a2b4   8Gi        RWO  
 - minikube
 - kubectl
 
+## Current version:
+
+- Bitrix 24.0.796
+- PHP 8.1
+- MySQL 8
+
 ## Data:
 
 - Url http://bitrix.local
@@ -81,7 +87,16 @@ make delete
 make exec type=mysql num=0
 ```
 ```shell
+make exec type=php num=0
+```
+```shell
 make logs type=nginx
+```
+```shell
+make logs type=php
+```
+```shell
+make logs type=mysql
 ```
 ```shell
 make del-pod type=php num=0

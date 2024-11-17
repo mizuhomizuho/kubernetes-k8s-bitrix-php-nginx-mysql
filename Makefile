@@ -1,7 +1,11 @@
 PHP_SPLIT = preg_split('/\s+/', trim(file_get_contents('php://stdin')))
 PODS_TO_PHP = kubectl get pods | grep "$(type)-[0-9a-z]*-[0-9a-z]*" | sed "s@\s.*@\ @" | php -r
 PODS_BY_NUM = $(shell ${PODS_TO_PHP} "echo $(PHP_SPLIT)[$(num)];")
-MAIN_YAML = "$(CURDIR)/k8s/main.yaml"
+
+DEPLOYMENT_YAML = "$(CURDIR)/k8s/yams/deployment.yaml"
+CONFIG_YAML = "$(CURDIR)/k8s/yams/config.yaml"
+NETWORK_YAML = "$(CURDIR)/k8s/yams/network.yaml"
+PVC_YAML = "$(CURDIR)/k8s/yams/pvc.yaml"
 
 .PHONY: restart
 restart:
@@ -10,11 +14,16 @@ restart:
 
 .PHONY: apply
 apply:
-	@kubectl apply -f $(MAIN_YAML)
+	@kubectl apply -f $(PVC_YAML)
+	@kubectl apply -f $(CONFIG_YAML)
+	@kubectl apply -f $(DEPLOYMENT_YAML)
+	@kubectl apply -f $(NETWORK_YAML)
 
 .PHONY: delete
 delete:
-	-@kubectl delete -f $(MAIN_YAML)
+	@kubectl apply -f $(NETWORK_YAML)
+	@kubectl apply -f $(DEPLOYMENT_YAML)
+	@kubectl apply -f $(CONFIG_YAML)
 
 .PHONY: exec
 exec:

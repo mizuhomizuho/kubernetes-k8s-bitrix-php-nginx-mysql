@@ -4,15 +4,21 @@ echo "Boot..."
 date +"%Y-%m-%d %H:%M:%S"
 
 if [ ! -d "/var/www/app/web" ]; then
+
   mkdir /var/www/app/web
   chmod 777 /var/www/app/web
   tar -xzf /k8s/business_encode.tar.gz -C /var/www/app/web
   chown -R www-data:www-data /var/www/app/web
-fi
 
-cat /k8s/php_bitrix.ini > /usr/local/etc/php/conf.d/php_bitrix.ini
-cat /k8s/scripts/adminer-4.8.1.php > /var/www/app/web/adminer-4.8.1.php
-# curl -sSLf -o /var/www/app/web/bitrix_server_test.php https://dev.1c-bitrix.ru/download/scripts/bitrix_server_test.php
+  cat /k8s/scripts/adminer-4.8.1.php > /var/www/app/web/adminer-4.8.1.php
+
+  cat /k8s/scripts/php_status.sh > /var/www/app/php_status.sh
+  chmod +x /var/www/app/php_status.sh
+  cat /k8s/scripts/mysql_status.sh > /var/www/app/mysql_status.sh
+  chmod +x /var/www/app/mysql_status.sh
+
+#   curl -sSLf -o /var/www/app/web/bitrix_server_test.php https://dev.1c-bitrix.ru/download/scripts/bitrix_server_test.php
+fi
 
 NGINX_IP=$(getent hosts "nginx.default.svc.cluster.local" | sed "s@\s.*@\ @")
 while true; do
@@ -23,12 +29,6 @@ while true; do
   fi
   sleep 0.5
 done
-
-if [ ! -d "/usr/local/etc/php-fpm.d/bu" ]; then
-  mkdir /usr/local/etc/php-fpm.d/bu
-  cat /usr/local/etc/php-fpm.d/www.conf > /usr/local/etc/php-fpm.d/bu/www.conf
-  echo "\nrequest_terminate_timeout = 888" >> /usr/local/etc/php-fpm.d/www.conf # __TIMEOUT_VALUE__
-fi
 
 /usr/sbin/sshd -D &
 php-fpm -F -R &

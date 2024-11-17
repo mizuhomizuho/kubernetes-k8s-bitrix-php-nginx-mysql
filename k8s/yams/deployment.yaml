@@ -1,0 +1,177 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  annotations:
+    config.kubernetes.io/depends-on:
+      "PersistentVolumeClaim/app-pvc,
+      PersistentVolumeClaim/mysql-pvc,
+      Secret/mysql-secret,
+      ConfigMap/mysql-config"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql-root-password
+            - name: MYSQL_DATABASE
+              value: sitemanager
+            - name: MYSQL_USER
+              value: sitemanager
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql-user-password
+          volumeMounts:
+            - name: mysql-config
+              mountPath: /etc/mysql/conf.d
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+            - name: app
+              mountPath: /var/www/app
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "/var/www/app/mysql_status.sh"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "/var/www/app/mysql_status.sh"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          startupProbe:
+            exec:
+              command: ["sh", "-c", "/var/www/app/mysql_status.sh"]
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 60
+      volumes:
+        - name: mysql-config
+          configMap:
+            name: mysql-config
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+        - name: app
+          persistentVolumeClaim:
+            claimName: app-pvc
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php
+  annotations:
+    config.kubernetes.io/depends-on:
+      "PersistentVolumeClaim/app-pvc,
+      ConfigMap/php-ini"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: php
+  template:
+    metadata:
+      labels:
+        app: php
+    spec:
+      containers:
+        - name: php
+          image: k8s_bitrix_php
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "-c", "/k8s/scripts/php_bootstrap.sh"]
+          env:
+            - name: PHP_INI_SCAN_DIR
+              value: /usr/local/etc/php/conf.d:/usr/local/etc/php/bitrix.d
+          volumeMounts:
+            - name: php-ini
+              mountPath: /usr/local/etc/php/bitrix.d
+            - name: app
+              mountPath: /var/www/app
+            - name: k8s
+              mountPath: /k8s
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "/var/www/app/php_status.sh"]
+            initialDelaySeconds: 15
+            timeoutSeconds: 1
+            periodSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "/var/www/app/php_status.sh"]
+            initialDelaySeconds: 20
+            timeoutSeconds: 2
+            periodSeconds: 30
+            failureThreshold: 3
+          startupProbe:
+            exec:
+              command: ["sh", "-c", "/var/www/app/php_status.sh"]
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            failureThreshold: 30
+      volumes:
+        - name: php-ini
+          configMap:
+            name: php-ini
+        - name: app
+          persistentVolumeClaim:
+            claimName: app-pvc
+        - name: k8s
+          hostPath:
+            path: /k8s
+
+---
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  annotations:
+    config.kubernetes.io/depends-on:
+      "PersistentVolumeClaim/app-pvc,
+      ConfigMap/nginx-config,
+      Deployment/php,
+      Deployment/mysql"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+            - name: app
+              mountPath: /var/www/app
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: nginx-config
+        - name: app
+          persistentVolumeClaim:
+            claimName: app-pvc
