@@ -44,6 +44,7 @@ mysql-pvc   Bound    pvc-b032affe-9e50-41ba-992e-e32b34a8a2b4   8Gi        RWO  
 - Mysql user "sitemanager"
 - Mysql passowrd "sitemanager"
 - Mysql db "sitemanager"
+- Ssh password "root123"
 - ssh -p 8822 root@127.0.0.1
 - http://bitrix.local/adminer-4.8.1.php
 
