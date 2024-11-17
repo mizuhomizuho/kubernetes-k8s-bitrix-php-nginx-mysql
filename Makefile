@@ -59,7 +59,7 @@ logs:
 	@${PODS_TO_PHP} \
  	"foreach ($(PHP_SPLIT) as $$podId) \
 		echo \
-		$$podId . ' $(lp) (begin):' . PHP_EOL . \
-		shell_exec('kubectl logs ' . $$podId . ' $(lp)') . \
-		$$podId . ' $(lp) (end).' . PHP_EOL;"
+		$$podId . ' (begin):' . PHP_EOL . \
+		shell_exec('kubectl logs ' . $$podId) . \
+		$$podId . ' (end).' . PHP_EOL;"
 

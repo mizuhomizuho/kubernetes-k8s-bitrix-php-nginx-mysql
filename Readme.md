@@ -67,13 +67,10 @@ make delete
 make exec type=mysql num=0
 ```
 ```shell
-make logs type=mysql
+make logs type=nginx
 ```
 ```shell
-make logs type=php lp="-c php-init"
-```
-```shell
-make del-pod type=mysql num=0
+make del-pod type=php num=0
 ```
 
 ## Ответы на вопросы:
