@@ -1,8 +1,5 @@
 # KUBERNETES (K8S) BITRIX PHP NGINX MYSQLU
 
-- Вопросы -> [PDF](https://github.com/mizuhomizuho/kubernetes-k8s-bitrix-php-nginx-mysql/blob/master/Тест.pdf)
-- Ответы -> [PDF](https://github.com/mizuhomizuho/kubernetes-k8s-bitrix-php-nginx-mysql/blob/master/Result.pdf)
-
 ```text
 Ingress:
 ------------------------------------------------------------------------------------------------------------
