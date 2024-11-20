@@ -1,7 +1,11 @@
 # KUBERNETES (K8S) BITRIX PHP NGINX MYSQL
 
-- Task definition + questions -> [PDF](https://github.com/mizuhomizuho/kubernetes-k8s-bitrix-php-nginx-mysql/blob/master/Тест.pdf)
-- Answers to questions -> [PDF](https://github.com/mizuhomizuho/kubernetes-k8s-bitrix-php-nginx-mysql/blob/master/Result.pdf)
+## Task:
+
+Creation of an initial build for the development of a microservice architecture kubernetes + bitrix + php + nginx + mysql.
+For use in further CI/CD processes.
+
+## Information on the composition of the structure:
 
 ```text
 Ingress:
